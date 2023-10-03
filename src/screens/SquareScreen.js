@@ -1,50 +1,64 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import { View, StyleSheet } from 'react-native'
 import ColorCounter from "../components/ColorCounter";
 
-const COLOR_INCREMENT = 5;
+const COLOR_INCREMENT = 15;
+
+const shouldChangeColor = (colorValue, amount) => {
+  const MAX_VALUE = 255;
+  const MIN_VALUE = 0;
+
+  return colorValue + amount <= MAX_VALUE && colorValue + amount >= MIN_VALUE;
+}
+
+const reducer = (state, action) => {
+
+  switch (action.type) {
+    case 'change_red':
+      return shouldChangeColor(state.red, action.payload)
+        ? { ...state, red: state.red +  action.payload }
+        : state;
+    case 'change_green':
+      return shouldChangeColor(state.green, action.payload)
+        ? { ...state, green: state.green +  action.payload }
+        : state;
+    case 'change_blue':
+      return shouldChangeColor(state.blue, action.payload)
+        ? { ...state, blue: state.blue +  action.payload }
+        : state;
+    default:
+      return state;
+  }
+}
+
 
 const SquareScreen = () => {
-  const [red, setRed] = useState(0);
-  const [green, setGreen] = useState(0);
-  const [blue, setBlue] = useState(0);
+  const [state, dispatch] = useReducer(reducer, { red: 0, green: 0, blue: 0 });
 
-  const increaseColor = (fn, colorValue) => {
-    if (colorValue <= 255) {
-      fn(colorValue + COLOR_INCREMENT);
-    }
-  }
-
-  const decreaseColor = (fn, colorValue) => {
-    if (colorValue > 0) {
-      fn(colorValue - COLOR_INCREMENT);
-    }
-  }
-
-  console.log(`rgb(${red},${green},${blue})`);
+  console.log(state);
 
   return (
     <View>
       <ColorCounter
         color="red"
-        increaseColor={() => increaseColor(setRed, red)}
-        decreaseColor={() => decreaseColor(setRed, red)}
+        increaseColor={() => dispatch({ type: 'change_red', payload: COLOR_INCREMENT })}
+        decreaseColor={() => dispatch({ type: 'change_red', payload: COLOR_INCREMENT * -1 })}
       />
       <ColorCounter
         color="green"
-        increaseColor={() => increaseColor(setGreen, green)}
-        decreaseColor={() => decreaseColor(setGreen, green)}
+        increaseColor={() => dispatch({ type: 'change_green', payload: COLOR_INCREMENT })}
+        decreaseColor={() => dispatch({ type: 'change_green', payload: COLOR_INCREMENT * -1 })}
       />
       <ColorCounter
         color="blue"
-        increaseColor={() => increaseColor(setBlue, blue)}
-        decreaseColor={() => decreaseColor(setBlue, blue)}
+        increaseColor={() => dispatch({ type: 'change_blue', payload: COLOR_INCREMENT })}
+        decreaseColor={() => dispatch({ type: 'change_blue', payload: COLOR_INCREMENT * -1 })}
       />
 
       <View
         style={{
           ...styles.colorBox,
-          backgroundColor: `rgb(${red},${green},${blue})`,
+          backgroundColor: `rgb(${state.red},${state.green},${state.blue})`,
         }}
       />
     </View>
